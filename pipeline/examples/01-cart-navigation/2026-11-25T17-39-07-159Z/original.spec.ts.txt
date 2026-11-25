@@ -1,0 +1,119 @@
+import { expect, test, type Locator } from "@playwright/test";
+import { AssertionReporter } from "../../../src/assertion/AssertionReporter";
+import { cartNavigationCases } from "../../../src/data/fixture/cartNavigation";
+import { CartPage } from "../../../src/page/CartPage";
+import { InventoryPage } from "../../../src/page/InventoryPage";
+
+async function expectReportedText(locator: Locator, expected: string, label: string): Promise<void> {
+  await expect(locator, label).toHaveText(expected).finally(async () => {
+    const [actual] = await locator.allTextContents().catch(() => []);
+    await test.info().attach(`${label} — Expected`, {
+      body: expected,
+      contentType: "text/plain",
+    });
+    await test.info().attach(`${label} — Actual (post-assertion snapshot)`, {
+      body: actual ?? "(missing)",
+      contentType: "text/plain",
+    });
+  });
+}
+
+cartNavigationCases.forEach(({ name, testData, expectedData }) => {
+  test(name, async ({ page }) => {
+    const inventory = new InventoryPage(page);
+    const cart = new CartPage(page);
+    const selected = [testData.remove, testData.keep];
+
+    const openCart = async (): Promise<void> => {
+      await inventory.openCart();
+      await test.step("Verify the cart page is ready", async () => {
+        await cart.shouldHavePath(/\/cart\.html$/);
+        await cart.waitForElement();
+      });
+    };
+
+    const verifyContents = async (
+      products: typeof selected,
+      expectedCount: number,
+    ): Promise<void> => {
+      await expect(cart.items).toHaveCount(expectedCount);
+
+      for (const product of products) {
+        const item = cart.itemFor(product);
+        await expectReportedText(item.name.locator, product.name, `${product.name} name`);
+        await expectReportedText(
+          item.price.locator,
+          `$${product.price.toFixed(2)}`,
+          `${product.name} price`,
+        );
+        await expectReportedText(
+          item.quantity.locator,
+          String(expectedData.quantity),
+          `${product.name} quantity`,
+        );
+      }
+    };
+
+    await inventory.open();
+
+    await test.step("Add two distinct products to an empty cart", async () => {
+      await expect(inventory.cartBadge).toHaveCount(0);
+
+      for (const product of selected) {
+        await inventory.getProductCardByName(product.name).addToCart();
+      }
+
+      await AssertionReporter.text(
+        "Verify the badge after adding both products",
+        inventory.cartBadge,
+        String(expectedData.initialCount),
+      );
+    });
+
+    await openCart();
+
+    await test.step("Verify both cart entries and their quantities", async () => {
+      await verifyContents(selected, expectedData.initialCount);
+    });
+
+    await cart.continueShopping();
+
+    await test.step("Verify inventory is ready and both products remain in the cart", async () => {
+      await inventory.shouldHavePath(/\/inventory\.html$/);
+      await inventory.waitForElement();
+      await AssertionReporter.text(
+        "Verify the badge after returning to inventory",
+        inventory.cartBadge,
+        String(expectedData.initialCount),
+      );
+
+      for (const product of selected) {
+        await expect(inventory.getProductCardByName(product.name).removeButton.locator).toBeVisible();
+      }
+    });
+
+    await openCart();
+
+    await test.step("Verify both entries survived the navigation round trip", async () => {
+      await verifyContents(selected, expectedData.initialCount);
+    });
+
+    await cart.itemFor(testData.remove).remove();
+
+    await test.step("Verify only the bike light remains", async () => {
+      await verifyContents([testData.keep], expectedData.remainingCount);
+      await expect(cart.itemFor(testData.remove).root.locator).toHaveCount(0);
+      await AssertionReporter.text(
+        "Verify the badge after removing the backpack",
+        cart.cartBadge,
+        String(expectedData.remainingCount),
+      );
+    });
+
+    await test.step("Remove the bike light and verify the cart is empty", async () => {
+      await cart.itemFor(testData.keep).remove();
+      await expect(cart.items).toHaveCount(0);
+      await expect(cart.cartBadge).toHaveCount(0);
+    });
+  });
+});

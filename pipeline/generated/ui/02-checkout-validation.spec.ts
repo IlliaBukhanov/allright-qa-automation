@@ -1,0 +1,38 @@
+import { expect, test } from "@playwright/test";
+import { products } from "../../../src/data/dict/products";
+import { checkoutValidationCases } from "../../../src/data/fixture/checkoutValidation";
+import { CartPage } from "../../../src/page/CartPage";
+import { CheckoutPage } from "../../../src/page/CheckoutPage";
+import { InventoryPage } from "../../../src/page/InventoryPage";
+
+checkoutValidationCases.forEach(({ name, testData, expectedData }) => {
+  test(name, async ({ page }) => {
+    const inventory = new InventoryPage(page);
+    const cart = new CartPage(page);
+    const checkout = new CheckoutPage(page);
+
+    await test.step("Prepare checkout with one catalog product", async () => {
+      await inventory.open();
+      await expect(inventory.cartBadge).toHaveCount(0);
+      await inventory.getProductCardByName(products.backpack.name).addToCart();
+      await inventory.openCart();
+      await cart.shouldHavePath(/\/cart\.html$/);
+      await cart.waitForElement();
+      await expect(cart.items).toHaveCount(1);
+      await expect(cart.itemFor(products.backpack).name.locator).toHaveText(products.backpack.name);
+      await cart.checkout();
+      await checkout.shouldHavePath(/\/checkout-step-one\.html$/);
+      await checkout.waitForElement();
+    });
+
+    await checkout.fillInformation(testData);
+    await checkout.continue();
+
+    await expect(checkout.error, "Verify the checkout validation error").toHaveText(expectedData.error);
+
+    await test.step("Verify checkout remains on the information form", async () => {
+      await checkout.shouldHavePath(/\/checkout-step-one\.html$/);
+      await checkout.waitForElement();
+    });
+  });
+});

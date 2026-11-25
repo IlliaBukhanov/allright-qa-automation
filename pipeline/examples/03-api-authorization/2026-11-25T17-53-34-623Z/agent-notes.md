@@ -1,0 +1,1 @@
+Exactly one API-project test. Reuses repository controllers, fixtures, booking type, and AssertionReporter; creates a unique booking, isolates the invalid-token request in an empty-storage context, verifies the full original payload, and performs deletion plus 404 verification in finally. No files were edited and no validation was executed, per read-only generation instructions.

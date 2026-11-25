@@ -1,0 +1,19 @@
+node_modules/
+playwright-report/
+test-results/
+playwright/.auth/
+.env
+.DS_Store
+
+# Bonus pipeline diagnostics: inspect locally; never publish raw session traces.
+pipeline/examples/**/*.log
+pipeline/examples/**/playwright-report/
+pipeline/examples/**/test-results/
+pipeline/examples/**/playwright-results.json
+pipeline/examples/**/agent-output.json
+
+# Full generation prompts are local diagnostics.
+pipeline/examples/**/prompt.md
+
+# Per-run generated compiler configuration (local diagnostic).
+pipeline/examples/**/tsconfig.json

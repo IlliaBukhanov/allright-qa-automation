@@ -1,0 +1,96 @@
+import { randomUUID } from "node:crypto";
+import { expect, request as apiRequest, test } from "@playwright/test";
+import { AssertionReporter } from "../../../src/assertion/AssertionReporter";
+import { AuthController } from "../../../src/api/AuthController";
+import { BookingController } from "../../../src/api/BookingController";
+import { bookerCredentials } from "../../../src/data/fixture/api/auth";
+import { updatedBooking, validBooking } from "../../../src/data/fixture/api/booking";
+import type { TBooking, TBookingCreated } from "../../../src/type/api/TBooking";
+
+test("Reject a booking update with an invalid token and preserve the original booking", async ({ request, baseURL }) => {
+  const bookings = new BookingController(request);
+  const original: TBooking = {
+    ...validBooking,
+    lastname: `${validBooking.lastname}-${randomUUID()}`,
+  };
+  const changed: TBooking = {
+    ...updatedBooking,
+    lastname: original.lastname,
+  };
+
+  const token = await test.step("Authenticate for booking setup and cleanup", async () => {
+    const response = await new AuthController(request).authenticate(bookerCredentials);
+    await AssertionReporter.status("Verify setup authentication succeeded", response, 200);
+    const issuedToken: unknown = (await response.json()).token;
+    if (typeof issuedToken !== "string" || !issuedToken.trim()) {
+      throw new Error("Authentication did not return a nonempty token");
+    }
+    return issuedToken;
+  });
+
+  let bookingId: number | undefined;
+  let scenarioPassed = false;
+  let anonymousContext: Awaited<ReturnType<typeof apiRequest.newContext>> | undefined;
+
+  try {
+    await test.step("Create a uniquely named booking", async () => {
+      const response = await bookings.create(original);
+      await AssertionReporter.status("Verify booking creation succeeded", response, 200);
+      const created: TBookingCreated = await response.json();
+      await AssertionReporter.equal(
+        "Verify the created booking ID is a positive integer",
+        Number.isSafeInteger(created.bookingid) && created.bookingid > 0,
+        true,
+      );
+      bookingId = created.bookingid;
+      await AssertionReporter.equal("Verify the created booking matches the original data", created.booking, original);
+    });
+
+    const createdBookingId = bookingId;
+    if (createdBookingId === undefined) {
+      throw new Error("Booking creation did not produce an ID");
+    }
+
+    anonymousContext = await apiRequest.newContext({
+      baseURL,
+      storageState: { cookies: [], origins: [] },
+    });
+
+    await test.step("Attempt to update the booking with an invalid token", async () => {
+      const response = await new BookingController(anonymousContext!).update(
+        createdBookingId,
+        changed,
+        "invalid-demo-token",
+      );
+      await AssertionReporter.status("Verify the invalid-token update was rejected", response, 403);
+    });
+
+    await test.step("Verify the complete original booking remains unchanged", async () => {
+      const response = await bookings.get(createdBookingId);
+      await AssertionReporter.status("Verify the original booking remains available", response, 200);
+      const persisted: TBooking = await response.json();
+      await AssertionReporter.equal("Verify all original booking fields were preserved", persisted, original);
+    });
+
+    scenarioPassed = true;
+  } finally {
+    if (bookingId !== undefined) {
+      const cleanupId = bookingId;
+      try {
+        await test.step("Delete only the booking created by this test and verify absence", async () => {
+          const deleteResponse = await bookings.delete(cleanupId, token);
+          await AssertionReporter.status("Verify cleanup deletion succeeded", deleteResponse, 201);
+          const getResponse = await bookings.get(cleanupId);
+          await AssertionReporter.status("Verify the cleaned-up booking is absent", getResponse, 404);
+        });
+      } catch (error) {
+        if (scenarioPassed) throw error;
+        test.info().annotations.push({
+          type: "cleanup",
+          description: "Cleanup or its absence verification failed after the scenario had already failed",
+        });
+      }
+    }
+    await anonymousContext?.dispose();
+  }
+});

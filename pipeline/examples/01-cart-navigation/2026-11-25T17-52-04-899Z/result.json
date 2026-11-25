@@ -1,0 +1,65 @@
+{
+  "case": "01-cart-navigation",
+  "mode": "generation",
+  "output": "pipeline/generated/ui/01-cart-navigation.spec.ts",
+  "expectedTestCount": 1,
+  "startedAt": "2026-11-25T17:52:04.900Z",
+  "status": "PASSED",
+  "steps": {
+    "generation": {
+      "command": [
+        "codex",
+        "exec",
+        "--sandbox",
+        "read-only",
+        "--skip-git-repo-check",
+        "--output-schema",
+        "pipeline/output-schema.json",
+        "--output-last-message",
+        "pipeline/examples/01-cart-navigation/2026-11-25T17-52-04-899Z/agent-output.json",
+        "-"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "signal": null
+    },
+    "typecheck": {
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "D:\\Project\\allright-qa-automation\\node_modules\\typescript\\bin\\tsc",
+        "--project",
+        "pipeline/examples/01-cart-navigation/2026-11-25T17-52-04-899Z/tsconfig.json"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "signal": null
+    },
+    "playwright": {
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "D:\\Project\\allright-qa-automation\\node_modules\\@playwright\\test\\cli.js",
+        "test",
+        "--config",
+        "pipeline/playwright.config.ts",
+        "--project=ui",
+        "01-cart-navigation\\.spec\\.ts$"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "signal": null
+    }
+  },
+  "humanReview": "Not recorded; see correction notes if supplied by engineer.",
+  "codeChangedSinceGeneration": false,
+  "tests": [
+    {
+      "title": "Preserve cart contents across navigation and remove a product",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "attempts": [
+        "passed"
+      ]
+    }
+  ],
+  "finishedAt": "2026-11-25T17:52:57.813Z"
+}

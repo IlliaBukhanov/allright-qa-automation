@@ -1,0 +1,65 @@
+{
+  "case": "03-api-authorization",
+  "mode": "generation",
+  "output": "pipeline/generated/api/03-api-authorization.spec.ts",
+  "expectedTestCount": 1,
+  "startedAt": "2026-11-25T17:53:34.623Z",
+  "status": "PASSED",
+  "steps": {
+    "generation": {
+      "command": [
+        "codex",
+        "exec",
+        "--sandbox",
+        "read-only",
+        "--skip-git-repo-check",
+        "--output-schema",
+        "pipeline/output-schema.json",
+        "--output-last-message",
+        "pipeline/examples/03-api-authorization/2026-11-25T17-53-34-623Z/agent-output.json",
+        "-"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "signal": null
+    },
+    "typecheck": {
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "D:\\Project\\allright-qa-automation\\node_modules\\typescript\\bin\\tsc",
+        "--project",
+        "pipeline/examples/03-api-authorization/2026-11-25T17-53-34-623Z/tsconfig.json"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "signal": null
+    },
+    "playwright": {
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "D:\\Project\\allright-qa-automation\\node_modules\\@playwright\\test\\cli.js",
+        "test",
+        "--config",
+        "pipeline/playwright.config.ts",
+        "--project=api",
+        "03-api-authorization\\.spec\\.ts$"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "signal": null
+    }
+  },
+  "humanReview": "Not recorded; see correction notes if supplied by engineer.",
+  "codeChangedSinceGeneration": false,
+  "tests": [
+    {
+      "title": "Reject a booking update with an invalid token and preserve the original booking",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "attempts": [
+        "passed"
+      ]
+    }
+  ],
+  "finishedAt": "2026-11-25T17:54:23.108Z"
+}

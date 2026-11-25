@@ -1,0 +1,57 @@
+{
+  "case": "02-checkout-validation",
+  "mode": "generation",
+  "output": "pipeline/generated/ui/02-checkout-validation.spec.ts",
+  "expectedTestCount": 3,
+  "startedAt": "2026-11-25T17:39:55.026Z",
+  "status": "FAILED",
+  "steps": {
+    "generation": {
+      "command": [
+        "codex",
+        "exec",
+        "--sandbox",
+        "read-only",
+        "--skip-git-repo-check",
+        "--output-schema",
+        "pipeline/output-schema.json",
+        "--output-last-message",
+        "pipeline/examples/02-checkout-validation/2026-11-25T17-39-55-025Z/agent-output.json",
+        "-"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "signal": null
+    },
+    "typecheck": {
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "D:\\Project\\allright-qa-automation\\node_modules\\typescript\\bin\\tsc",
+        "--project",
+        "pipeline/examples/02-checkout-validation/2026-11-25T17-39-55-025Z/tsconfig.json"
+      ],
+      "exitCode": 0,
+      "error": null,
+      "signal": null
+    },
+    "playwright": {
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "D:\\Project\\allright-qa-automation\\node_modules\\@playwright\\test\\cli.js",
+        "test",
+        "--config",
+        "pipeline/playwright.config.ts",
+        "--project",
+        "ui",
+        "02-checkout-validation\\.spec\\.ts$"
+      ],
+      "exitCode": 1,
+      "error": null,
+      "signal": null
+    }
+  },
+  "humanReview": "Not recorded; see correction notes if supplied by engineer.",
+  "codeChangedSinceGeneration": false,
+  "error": "playwright failed (1); see local logs.",
+  "finishedAt": "2026-11-25T17:40:29.048Z"
+}

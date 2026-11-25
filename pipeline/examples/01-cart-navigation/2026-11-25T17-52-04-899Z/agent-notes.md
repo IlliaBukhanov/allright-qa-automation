@@ -1,0 +1,1 @@
+Generates exactly one test from the existing cart-navigation fixture and uses authenticated ui-project state. Assumes setup-created storage state has an empty cart, as required by the repository contract. Read-only generation only; no files were changed and no validation or test execution was performed.

@@ -1,0 +1,1 @@
+Registers exactly three independent tests from the existing typed fixture. Assumes execution under the ui project, whose setup-created storage state authenticates standard_user with an empty cart. Reuses existing page objects, product dictionary, and AssertionReporter. Per read-only generation rules, no files were edited and no tests or type checks were run.

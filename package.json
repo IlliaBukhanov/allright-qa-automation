@@ -1,0 +1,21 @@
+{
+  "name": "allright-qa-automation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright + TypeScript UI and API automation assignment",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --project=login --project=ui",
+    "test:api": "playwright test --project=api",
+    "typecheck": "tsc --noEmit",
+    "test:headed": "playwright test --headed",
+    "report": "playwright show-report",
+    "generate:test": "node pipeline/generate.mjs",
+    "rerun:generated": "node pipeline/generate.mjs --rerun"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.0"
+  }
+}
